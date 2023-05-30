@@ -30,6 +30,11 @@ type Request struct {
 	Metadata *Metadata `json:"metadata,omitempty"`
 }
 
+// Optional returns a pointer to |v|. Used to easily assign literals to optional parameters.
+func Optional[T any](v T) *T {
+	return &v
+}
+
 // Metadata is an object describing metadata about the request.
 type Metadata struct {
 	// UserID is a UUID, hash value, or other external identifier for the user who is associated with the request.
