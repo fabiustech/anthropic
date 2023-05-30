@@ -1,5 +1,3 @@
-// Package models contains the enum values which represent the various
-// models available via the Anthropic API.
 package anthropic
 
 // Model represents all models.
