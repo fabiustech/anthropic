@@ -4,7 +4,7 @@ Zero dependency (Unofficial) Go client for the Anthropic API.
 ### Installation
 
 ```
-go get github.com/fabiustech/openai
+go get github.com/fabiustech/anthropic
 ```
 
 ### Example Usage
