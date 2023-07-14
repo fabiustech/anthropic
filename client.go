@@ -11,19 +11,27 @@ import (
 )
 
 const (
-	host         = "api.anthropic.com"
-	endpoint     = "v1/complete"
-	apiKeyHeader = "X-Api-Key"
+	host             = "api.anthropic.com"
+	endpoint         = "v1/complete"
+	apiKeyHeader     = "X-Api-Key"
+	apiVersionHeader = "Anthropic-Version"
+	defaultVersion   = "2023-06-01"
 )
 
 // Client is a client for the Anthropic API.
 type Client struct {
-	key string
+	key, version string
 }
 
 // NewClient returns a client with the given API key.
 func NewClient(key string) *Client {
-	return &Client{key: key}
+	return &Client{key: key, version: defaultVersion}
+}
+
+// SetVersion set's the value passed in the |Anthropic-Version| header for requests.
+// The default value is "2023-06-01".
+func (c *Client) SetVersion(version string) {
+	c.version = version
 }
 
 // NewCompletion returns a completion response from the API.
@@ -82,6 +90,7 @@ func (c *Client) newRequest(ctx context.Context, method string, url string, body
 	}
 
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(apiVersionHeader, c.version)
 	req.Header.Set(apiKeyHeader, c.key)
 
 	return req, nil
