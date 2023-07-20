@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 )
@@ -21,6 +22,7 @@ const (
 // Client is a client for the Anthropic API.
 type Client struct {
 	key, version string
+	debug        bool
 }
 
 // NewClient returns a client with the given API key.
@@ -34,8 +36,17 @@ func (c *Client) SetVersion(version string) {
 	c.version = version
 }
 
+// Debug enables debug logging. When enabled, the client will log the request's prompt.
+func (c *Client) Debug() {
+	c.debug = true
+}
+
 // NewCompletion returns a completion response from the API.
 func (c *Client) NewCompletion(ctx context.Context, req *Request) (*Response, error) {
+	if c.debug {
+		log.Printf("prompt: %s\n", req.Prompt)
+	}
+
 	var b, err = c.post(ctx, endpoint, req)
 	if err != nil {
 		return nil, err
