@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
+	"regexp"
+	"strings"
 )
 
 const (
@@ -60,7 +63,123 @@ func (c *Client) NewCompletion(ctx context.Context, req *Request) (*Response, er
 	return resp, nil
 }
 
-// TODO: Implement Streaming Response.
+type streamingRequest struct {
+	*Request
+	Stream bool `json:"stream"`
+}
+
+// NewStreamingCompletion returns two channels: the first will be sent |*Response|s as they are received from
+// the API and the second is sent any error(s) encountered while receiving / parsing responses.
+func (c *Client) NewStreamingCompletion(ctx context.Context, req *Request) (<-chan *Response, <-chan error, error) {
+	if c.debug {
+		log.Printf("prompt: %s\n", req.Prompt)
+	}
+
+	var receive, errs, err = c.postStream(ctx, endpoint, &streamingRequest{
+		Request: req,
+		Stream:  true,
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	var respCh = make(chan *Response)
+	var errCh = make(chan error)
+
+	go func() {
+		defer close(respCh)
+		defer close(errCh)
+
+		for {
+			select {
+			case b := <-receive:
+				var events []*event
+				events, err = parseEvents(b)
+				if err != nil {
+					errCh <- err
+					return
+				}
+
+				for _, e := range events {
+					switch e.Type {
+					case eventTypeCompletion:
+						var resp = &Response{}
+
+						if err = json.Unmarshal(e.Data, resp); err != nil {
+							errCh <- err
+							return
+						}
+
+						respCh <- resp
+
+						if resp.StopReason != nil {
+							return
+						}
+					case eventTypeError:
+						var errResp = &errorResponse{}
+						if err = json.Unmarshal(e.Data, errResp); err != nil {
+							errCh <- errors.New(string(e.Data))
+							return
+						}
+
+						errCh <- errResp
+						return
+					case eventTypePing:
+						// Do nothing.
+						break
+					default:
+						errCh <- ErrBadEvent
+						return
+
+					}
+				}
+			case err = <-errs:
+				errCh <- err
+				return
+			case <-ctx.Done():
+				errCh <- ctx.Err()
+				return
+			}
+		}
+	}()
+
+	return respCh, errCh, nil
+}
+
+var re = regexp.MustCompile("event: (.*?)\ndata: (.*?)\n")
+
+type eventType string
+
+const (
+	eventTypeCompletion eventType = "completion"
+	eventTypeError      eventType = "error"
+	eventTypePing       eventType = "ping"
+)
+
+var ErrBadEvent = errors.New("bad event")
+
+type event struct {
+	Type eventType
+	Data []byte
+}
+
+func parseEvents(b []byte) ([]*event, error) {
+	var out []*event
+
+	var matches = re.FindAllSubmatch(b, -1)
+	for _, group := range matches {
+		if len(group) != 3 {
+			return nil, ErrBadEvent
+		}
+
+		var ev = &event{
+			Type: eventType(strings.TrimSpace(string(group[1]))),
+			Data: group[2],
+		}
+		out = append(out, ev)
+	}
+
+	return out, nil
+}
 
 func (c *Client) post(ctx context.Context, path string, payload any) ([]byte, error) {
 	var b, err = json.Marshal(payload)
@@ -92,6 +211,72 @@ func (c *Client) post(ctx context.Context, path string, payload any) ([]byte, er
 	}
 
 	return io.ReadAll(resp.Body)
+}
+
+const bufferSize = 1024
+
+func (c *Client) postStream(ctx context.Context, path string, payload any) (<-chan []byte, <-chan error, error) {
+	var b, err = json.Marshal(payload)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var u = url.URL{
+		Scheme: "https",
+		Host:   host,
+		Path:   path,
+	}
+
+	var req *http.Request
+	req, err = c.newRequest(ctx, "POST", u.String(), bytes.NewBuffer(b))
+	if err != nil {
+		return nil, nil, err
+	}
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	req.Header.Set("Accept", "text/event-stream; charset=utf-8")
+	req.Header.Set("Connection", "keep-alive")
+	req.Header.Set("Cache-Control", "no-cache")
+
+	var resp *http.Response
+	resp, err = http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, nil, err
+	}
+	if err = interpretResponse(resp); err != nil {
+		_ = resp.Body.Close()
+		return nil, nil, err
+	}
+
+	var events = make(chan []byte)
+	var errCh = make(chan error)
+
+	go func() {
+		defer resp.Body.Close()
+		defer close(events)
+		defer close(errCh)
+
+		for {
+			var msg = make([]byte, bufferSize)
+			_, err = resp.Body.Read(msg)
+
+			switch {
+			case errors.Is(err, io.EOF):
+				return
+			case err != nil:
+				errCh <- err
+				return
+			case ctx.Err() != nil:
+				errCh <- ctx.Err()
+				return
+			default:
+				// No-op.
+			}
+
+			events <- msg
+		}
+	}()
+
+	return events, errCh, nil
 }
 
 func (c *Client) newRequest(ctx context.Context, method string, url string, body io.Reader) (*http.Request, error) {
