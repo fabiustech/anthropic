@@ -125,7 +125,6 @@ func (c *Client) NewStreamingCompletion(ctx context.Context, req *Request) (<-ch
 						return
 					case eventTypePing:
 						// Do nothing.
-						break
 					default:
 						errCh <- ErrBadEvent
 						return
@@ -155,6 +154,7 @@ const (
 	eventTypePing       eventType = "ping"
 )
 
+// ErrBadEvent is returned when an event is received that cannot be parsed.
 var ErrBadEvent = errors.New("bad event")
 
 type event struct {
