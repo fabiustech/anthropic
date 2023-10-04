@@ -78,7 +78,6 @@ func (c *Client) NewCompletionStreamedBatchResponse(ctx context.Context, req *Re
 	}
 
 	var resp = &Response{}
-	var done bool
 
 	for {
 		select {
@@ -87,11 +86,13 @@ func (c *Client) NewCompletionStreamedBatchResponse(ctx context.Context, req *Re
 		case rr := <-resps:
 			resp.Completion += rr.Completion
 			if rr.StopReason != nil {
-				done = true
+				resp.StopReason = rr.StopReason
+				resp.Stop = rr.Stop
+				resp.Model = rr.Model
 			}
 		}
 
-		if done {
+		if resp.StopReason != nil {
 			break
 		}
 	}
