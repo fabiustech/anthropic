@@ -63,6 +63,42 @@ func (c *Client) NewCompletion(ctx context.Context, req *Request) (*Response, er
 	return resp, nil
 }
 
+// NewCompletionStreamedBatchResponse returns a completion response from the API, which appears to the caller
+// as a non-streaming response. However, it is actually a streaming response under the hood. This is useful
+// in cases where you are getting a 524 error from the API, which is caused by the API taking too long to
+// respond. Our theory is that these errors are caused by the API taking too long to respond to the load balancer,
+// which then closes the connection. Since a streaming request will get a response as soon as the API has
+// generated the first token, this should prevent the load balancer from closing the connection.
+//
+// Note: This may be deprecated at any time, but is currently needed as most requests are running into this issue.
+func (c *Client) NewCompletionStreamedBatchResponse(ctx context.Context, req *Request) (*Response, error) {
+	var resps, errs, err = c.NewStreamingCompletion(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp = &Response{}
+	var done bool
+
+	for {
+		select {
+		case err = <-errs:
+			return nil, err
+		case rr := <-resps:
+			resp.Completion += rr.Completion
+			if rr.StopReason != nil {
+				done = true
+			}
+		}
+
+		if done {
+			break
+		}
+	}
+
+	return resp, nil
+}
+
 type streamingRequest struct {
 	*Request
 	Stream bool `json:"stream"`
