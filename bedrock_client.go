@@ -8,6 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/bedrockruntime"
 )
 
+// NewBedrockClient returns a new client for the Bedrock API.
+// I've implemented this client to have identical signatures to the original client.
 func NewBedrockClient(p client.ConfigProvider, cfgs ...*aws.Config) *BedrockClient {
 	return &BedrockClient{
 		client: bedrockruntime.New(p, cfgs...),
