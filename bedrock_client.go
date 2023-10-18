@@ -78,7 +78,10 @@ loop:
 				break loop
 			}
 			return nil, err
-		case rr := <-resps:
+		case rr, ok := <-resps:
+			if !ok {
+				break loop
+			}
 			resp.Completion += rr.Completion
 		}
 	}
@@ -126,11 +129,11 @@ func (bc *BedrockClient) NewStreamingCompletion(ctx context.Context, req *Reques
 						return
 					}
 
+					respCh <- out
+
 					if out.StopReason != nil {
 						return
 					}
-
-					respCh <- out
 				case *bedrockruntime.ResponseStreamUnknownEvent:
 					// Continue.
 				}
