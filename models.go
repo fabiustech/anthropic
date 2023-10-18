@@ -32,6 +32,11 @@ func (c Model) String() string {
 	return completionToString[c]
 }
 
+// BedrockString returns the string representation of the model for use with AWS Bedrock.
+func (c Model) BedrockString() string {
+	return bedrockToString[c]
+}
+
 // MarshalText implements the encoding.TextMarshaler interface.
 func (c Model) MarshalText() ([]byte, error) {
 	return []byte(c.String()), nil
@@ -62,4 +67,10 @@ var stringToCompletion = map[string]Model{
 	"claude-2.0":         Claude2Dot0,
 	"claude-instant-1":   ClaudeInstant,
 	"claude-instant-1.1": ClaudeInstant1Dot1,
+}
+
+var bedrockToString = map[Model]string{
+	Claude:        "anthropic.claude-v2",
+	Claude2Dot0:   "anthropic.claude-v2",
+	ClaudeInstant: "anthropic.claude-instant-v1",
 }

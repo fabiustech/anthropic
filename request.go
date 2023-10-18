@@ -6,7 +6,9 @@ type Request struct {
 	Prompt Prompt `json:"prompt"`
 	// Model controls which version of Claude answers your request. For more on the models, see the documentation in
 	// models.go or visit https://console.anthropic.com/docs/api/reference. Required.
-	Model Model `json:"model"`
+	// When making a request via AWS Bedrock, this will be zeroed out (and instead used as the model ID the request),
+	// thus the omitempty tag.
+	Model Model `json:"model,omitempty"`
 	// MaxTokensToSample is the maximum number of tokens to generate before stopping. Required.
 	MaxTokensToSample int `json:"max_tokens_to_sample"`
 	// StopSequences specifies a list of sequences to stop sampling at. Anthropic's models stop on "\n\nHuman:", and
