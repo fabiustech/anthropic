@@ -29,10 +29,11 @@ func (bc *BedrockClient) Debug() {
 
 // NewCompletion returns a completion response from the API.
 func (bc *BedrockClient) NewCompletion(ctx context.Context, req *Request) (*Response, error) {
-	var m = req.Model
-	req.Model = UnknownModel
+	r := *req
+	var m = r.Model
+	r.Model = UnknownModel
 
-	var b, err = json.Marshal(req)
+	var b, err = json.Marshal(r)
 	if err != nil {
 		return nil, err
 	}
@@ -92,10 +93,11 @@ loop:
 // NewStreamingCompletion returns two channels: the first will be sent |*Response|s as they are received from
 // the API and the second is sent any error(s) encountered while receiving / parsing responses.
 func (bc *BedrockClient) NewStreamingCompletion(ctx context.Context, req *Request) (<-chan *Response, <-chan error, error) {
-	var m = req.Model
-	req.Model = UnknownModel
+	r := *req
+	var m = r.Model
+	r.Model = UnknownModel
 
-	var b, err = json.Marshal(req)
+	var b, err = json.Marshal(r)
 	if err != nil {
 		return nil, nil, err
 	}
