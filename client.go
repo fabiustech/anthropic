@@ -152,7 +152,7 @@ func (c *Client) NewStreamingCompletion(ctx context.Context, req *Request) (<-ch
 							return
 						}
 					case eventTypeError:
-						var errResp = &errorResponse{}
+						var errResp = &ResponseError{}
 						if err = json.Unmarshal(e.Data, errResp); err != nil {
 							errCh <- errors.New(string(e.Data))
 							return
@@ -334,7 +334,15 @@ func interpretResponse(resp *http.Response) error {
 		var b, err = io.ReadAll(resp.Body)
 		if err != nil {
 			return fmt.Errorf("code: %d, unable to read response body", resp.StatusCode)
+
 		}
+
+		var errResp = &ResponseError{}
+		if err = json.Unmarshal(b, errResp); err == nil {
+			errResp.Err.Code = resp.StatusCode
+			return errResp
+		}
+
 		return fmt.Errorf("code: %d, error: %s", resp.StatusCode, string(b))
 	}
 
