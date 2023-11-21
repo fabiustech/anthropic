@@ -42,7 +42,7 @@ func (m *Message) marshal() string {
 	return fmt.Sprintf("%s: %s", m.UserType, m.Text)
 }
 
-// NewPromptFromMessages returns a Prompt from a slice of |Message|s by wrapping them in the exp Human/Assistant
+// NewPromptFromMessages returns a Prompt from a slice of |Message|s by wrapping them in the expected Human/Assistant
 // format. You can use this style to "Put words in Claude's mouth."
 // https://console.anthropic.com/docs/prompt-design#-putting-words-in-claude-s-mouth-
 func NewPromptFromMessages(msg []*Message) Prompt {
@@ -53,7 +53,7 @@ func NewPromptFromMessages(msg []*Message) Prompt {
 	return Prompt(strings.Join(prompt, ""))
 }
 
-// NewPromptFromString returns a Prompt from a string by wrapping it in the exp Human/Assistant format.
+// NewPromptFromString returns a Prompt from a string by wrapping it in the expected Human/Assistant format.
 func NewPromptFromString(s string) Prompt {
 	return Prompt(fmt.Sprintf("\n\nHuman: %s\n\nAssistant:", s))
 }
