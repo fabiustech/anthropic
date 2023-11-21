@@ -10,8 +10,14 @@ const (
 	// which will automatically get updates to the model as they are released.
 	Claude
 	// Claude2Dot0 is Anthropic's largest model, ideal for a wide range of more complex tasks. If you rely on the exact
-	// output shape, you should specify this full model version.
+	// output shape, you should specify this full model version. It has a context window of 100K tokens.
 	Claude2Dot0
+	// Claude2Dot1 represents an improvement in specific capabilities and performance over Claude 2. With strong
+	// accuracy upgrades, double the context window, and experimental tool use features, Claude can handle more complex
+	// reasoning and generation while remaining honest and grounded in factual evidence.
+	// Claude 2.1's context window is 200K tokens, enabling it to leverage much richer contextual information to
+	// generate higher quality and more nuanced output.
+	Claude2Dot1
 	// ClaudeInstant is a smaller model with far lower latency, sampling at roughly 40 words/sec! Its output quality
 	// is somewhat lower than the latest Claude model, particularly for complex tasks. However, it is much less
 	// expensive and blazing fast. Anthropic believes that this model provides more than adequate performance on a range
@@ -58,6 +64,7 @@ func (c *Model) UnmarshalText(b []byte) error {
 var completionToString = map[Model]string{
 	Claude:             "claude-2",
 	Claude2Dot0:        "claude-2.0",
+	Claude2Dot1:        "claude-2.1",
 	ClaudeInstant:      "claude-instant-1",
 	ClaudeInstant1Dot1: "claude-instant-1.1",
 }
@@ -65,6 +72,7 @@ var completionToString = map[Model]string{
 var stringToCompletion = map[string]Model{
 	"claude-2":           Claude,
 	"claude-2.0":         Claude2Dot0,
+	"claude-2.1":         Claude2Dot1,
 	"claude-instant-1":   ClaudeInstant,
 	"claude-instant-1.1": ClaudeInstant1Dot1,
 }
