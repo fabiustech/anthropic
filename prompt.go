@@ -46,12 +46,16 @@ func (m *Message) marshal() string {
 type Messages []*Message
 
 var (
-	ErrEmptyMessages    = errors.New("messages cannot be empty")
+	// ErrEmptyMessages indicates a Message slice is empty.
+	ErrEmptyMessages = errors.New("messages cannot be empty")
+	// ErrBadSystemMessage indicates that a Message slice contains a system message that was not the first Message in
+	// the slice.
 	ErrBadSystemMessage = errors.New("system messages must be the first message in the dialogue")
+	// ErrMissingAssistant indicates that a Message slice's last Message was not from the assistant.
 	ErrMissingAssistant = errors.New("the final message in the dialogue must be from the assistant")
 )
 
-// Validate ensures that the messages are in the correct format. It returns an error if the messages are invalid.
+// Validate ensures that |m| is valid. It returns an error if |m| is invalid.
 func (m Messages) Validate() error {
 	if len(m) == 0 {
 		return ErrEmptyMessages
@@ -69,8 +73,8 @@ func (m Messages) Validate() error {
 }
 
 // NewPromptFromMessages returns a Prompt from a slice of |Message|s by wrapping them in the expected Human/Assistant
-// format. You can use this style to "Put words in Claude's mouth."
-// https://console.anthropic.com/docs/prompt-design#-putting-words-in-claude-s-mouth-
+// format. You can use this style to "Put words in Claude's mouth." Note: this function does not validate the messages,
+// and therefore can result in a 4xx response from the API.
 func NewPromptFromMessages(msg []*Message) Prompt {
 	var prompt = make([]string, len(msg))
 	for i, m := range msg {
