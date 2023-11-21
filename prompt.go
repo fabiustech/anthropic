@@ -21,9 +21,12 @@ type UserType string
 
 const (
 	// UserTypeHuman is the user type for the human in the dialogue.
-	UserTypeHuman = "Human"
+	UserTypeHuman = "\n\nHuman"
 	// UserTypeAssistant is the user type for the assistant in the dialogue.
-	UserTypeAssistant = "Assistant"
+	UserTypeAssistant = "\n\nAssistant"
+	// UserTypeSystem is the user type for the system in the dialogue. It should always be the first "message" in the
+	// dialogue.
+	UserTypeSystem = "System"
 )
 
 // Message represents a single message in a dialogue. It contains the UserType and the text of the message.
@@ -33,10 +36,13 @@ type Message struct {
 }
 
 func (m *Message) marshal() string {
+	if m.UserType == UserTypeSystem {
+		return m.Text
+	}
 	return fmt.Sprintf("%s: %s", m.UserType, m.Text)
 }
 
-// NewPromptFromMessages returns a Prompt from a slice of |Message|s by wrapping them in the expected Human/Assistant
+// NewPromptFromMessages returns a Prompt from a slice of |Message|s by wrapping them in the exp Human/Assistant
 // format. You can use this style to "Put words in Claude's mouth."
 // https://console.anthropic.com/docs/prompt-design#-putting-words-in-claude-s-mouth-
 func NewPromptFromMessages(msg []*Message) Prompt {
@@ -44,10 +50,16 @@ func NewPromptFromMessages(msg []*Message) Prompt {
 	for i, m := range msg {
 		prompt[i] = m.marshal()
 	}
-	return Prompt("\n\n" + strings.Join(prompt, "\n\n"))
+	return Prompt(strings.Join(prompt, ""))
 }
 
-// NewPromptFromString returns a Prompt from a string by wrapping it in the expected Human/Assistant format.
+// NewPromptFromString returns a Prompt from a string by wrapping it in the exp Human/Assistant format.
 func NewPromptFromString(s string) Prompt {
 	return Prompt(fmt.Sprintf("\n\nHuman: %s\n\nAssistant:", s))
+}
+
+// NewPromptFromStringWithSystemMessage returns a Prompt from both a system and human string by wrapping them in the
+// exp Human/Assistant format.
+func NewPromptFromStringWithSystemMessage(system, human string) Prompt {
+	return Prompt(fmt.Sprintf("%s%s", system, NewPromptFromString(human)))
 }

@@ -16,7 +16,7 @@ type ResponseError struct {
 
 // Error implements the error interface.
 func (r *ResponseError) Error() string {
-	return fmt.Sprintf("%s: %s (code: %s)", r.Err.Type, r.Err.Message, r.Err.Code)
+	return fmt.Sprintf("%s: %s (code: %d)", r.Err.Type, r.Err.Message, r.Err.Code)
 }
 
 // Retryable returns true if the error is retryable. For now, we assume all 5xx errors are transient.
