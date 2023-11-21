@@ -1,6 +1,7 @@
 package anthropic
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -42,6 +43,31 @@ func (m *Message) marshal() string {
 	return fmt.Sprintf("%s: %s", m.UserType, m.Text)
 }
 
+type Messages []*Message
+
+var (
+	ErrEmptyMessages    = errors.New("messages cannot be empty")
+	ErrBadSystemMessage = errors.New("system messages must be the first message in the dialogue")
+	ErrMissingAssistant = errors.New("the final message in the dialogue must be from the assistant")
+)
+
+// Validate ensures that the messages are in the correct format. It returns an error if the messages are invalid.
+func (m Messages) Validate() error {
+	if len(m) == 0 {
+		return ErrEmptyMessages
+	}
+	for i, v := range m {
+		if v.UserType == UserTypeSystem && i != 0 {
+			return ErrBadSystemMessage
+		}
+		if i == len(m)-1 && v.UserType != UserTypeAssistant {
+			return ErrMissingAssistant
+		}
+	}
+
+	return nil
+}
+
 // NewPromptFromMessages returns a Prompt from a slice of |Message|s by wrapping them in the expected Human/Assistant
 // format. You can use this style to "Put words in Claude's mouth."
 // https://console.anthropic.com/docs/prompt-design#-putting-words-in-claude-s-mouth-
@@ -51,6 +77,15 @@ func NewPromptFromMessages(msg []*Message) Prompt {
 		prompt[i] = m.marshal()
 	}
 	return Prompt(strings.Join(prompt, ""))
+}
+
+// NewValidPromptFromMessages returns a Prompt from a slice of |Message|s by wrapping them in the expected
+// Human/Assistant format. It also validates the messages to ensure they are in the correct format.
+func NewValidPromptFromMessages(msgs Messages) (Prompt, error) {
+	if err := msgs.Validate(); err != nil {
+		return "", err
+	}
+	return NewPromptFromMessages(msgs), nil
 }
 
 // NewPromptFromString returns a Prompt from a string by wrapping it in the expected Human/Assistant format.

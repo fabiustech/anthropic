@@ -21,6 +21,53 @@ func TestMessageMarshal(t *testing.T) {
 	}
 }
 
+func TestMessagesValidate(t *testing.T) {
+	tests := []struct {
+		name string
+		msgs Messages
+		err  error
+	}{
+		{
+			name: "Empty Messages",
+			msgs: Messages{},
+			err:  ErrEmptyMessages,
+		},
+		{
+			name: "System Message Not First",
+			msgs: Messages{
+				{UserType: UserTypeHuman, Text: "Hi"},
+				{UserType: UserTypeSystem, Text: "System message"},
+			},
+			err: ErrBadSystemMessage,
+		},
+		{
+			name: "Missing Assistant Message",
+			msgs: Messages{
+				{UserType: UserTypeHuman, Text: "Hello"},
+			},
+			err: ErrMissingAssistant,
+		},
+		{
+			name: "Valid Messages",
+			msgs: Messages{
+				{UserType: UserTypeSystem, Text: "System starting"},
+				{UserType: UserTypeHuman, Text: "Hi"},
+				{UserType: UserTypeAssistant, Text: "Hello"},
+			},
+			err: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var err = tt.msgs.Validate()
+			if err != tt.err {
+				t.Errorf("Messages.Validate() error = %v, wantErr %v", err, tt.err)
+			}
+		})
+	}
+}
+
 func TestNewPromptFromMessages(t *testing.T) {
 	var tcs = []struct {
 		msgs []*Message
