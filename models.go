@@ -31,6 +31,14 @@ const (
 	// of tasks including text classification, summarization, and lightweight chat applications, as well as search
 	// result summarization. If you rely on the exact output shape, you should specify this full model version.
 	ClaudeInstant1Dot1
+
+	// Claude3Opus20240229 is Anthropic's most powerful model, delivering state-of-the-art performance on highly complex
+	// tasks and demonstrating fluency and human-like understanding.
+	Claude3Opus20240229
+
+	// Claude3Sonnet20240229 is Anthropic's most balanced model between intelligence and speed, a great choice for
+	// enterprise workloads and scaled AI deployments.
+	Claude3Sonnet20240229
 )
 
 // String implements the fmt.Stringer interface.
@@ -62,19 +70,23 @@ func (c *Model) UnmarshalText(b []byte) error {
 }
 
 var completionToString = map[Model]string{
-	Claude:             "claude-2",
-	Claude2Dot0:        "claude-2.0",
-	Claude2Dot1:        "claude-2.1",
-	ClaudeInstant:      "claude-instant-1",
-	ClaudeInstant1Dot1: "claude-instant-1.1",
+	Claude:                "claude-2",
+	Claude2Dot0:           "claude-2.0",
+	Claude2Dot1:           "claude-2.1",
+	ClaudeInstant:         "claude-instant-1",
+	ClaudeInstant1Dot1:    "claude-instant-1.1",
+	Claude3Opus20240229:   "claude-3-opus-20240229",
+	Claude3Sonnet20240229: "claude-3-sonnet-20240229",
 }
 
 var stringToCompletion = map[string]Model{
-	"claude-2":           Claude,
-	"claude-2.0":         Claude2Dot0,
-	"claude-2.1":         Claude2Dot1,
-	"claude-instant-1":   ClaudeInstant,
-	"claude-instant-1.1": ClaudeInstant1Dot1,
+	"claude-2":                 Claude,
+	"claude-2.0":               Claude2Dot0,
+	"claude-2.1":               Claude2Dot1,
+	"claude-instant-1":         ClaudeInstant,
+	"claude-instant-1.1":       ClaudeInstant1Dot1,
+	"claude-3-opus-20240229":   Claude3Opus20240229,
+	"claude-3-sonnet-20240229": Claude3Sonnet20240229,
 }
 
 var bedrockToString = map[Model]string{
