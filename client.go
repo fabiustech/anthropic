@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -69,7 +70,11 @@ func (c *Client) NewCompletion(ctx context.Context, req *Request) (*Response, er
 // NewMessageRequest makes a request to the messages endpoint.
 func (c *Client) NewMessageRequest(ctx context.Context, req *v3.Request[v3.Message]) (*v3.Response, error) {
 	if c.debug {
-		log.Printf("prompt: %s\n", req.Messages)
+		for i, m := range req.Messages {
+			for _, cont := range m.Content {
+				slog.Info("message", "index", i, "role", m.Role, "contentType", cont.Type, "text", cont.Text, "source", cont.Source)
+			}
+		}
 	}
 
 	var b, err = c.post(ctx, messagesEndpoint, req)
@@ -88,7 +93,9 @@ func (c *Client) NewMessageRequest(ctx context.Context, req *v3.Request[v3.Messa
 // NewShortHandMessageRequest makes a request to the messages endpoint.
 func (c *Client) NewShortHandMessageRequest(ctx context.Context, req *v3.Request[v3.ShortHandMessage]) (*v3.Response, error) {
 	if c.debug {
-		log.Printf("prompt: %s\n", req.Messages)
+		for i, m := range req.Messages {
+			slog.Info("message", "index", i, "role", m.Role, "content", m.Content)
+		}
 	}
 
 	var b, err = c.post(ctx, messagesEndpoint, req)
