@@ -8,18 +8,22 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
+
+	v3 "github.com/fabiustech/anthropic/v3"
 )
 
 const (
-	host             = "api.anthropic.com"
-	endpoint         = "v1/complete"
-	apiKeyHeader     = "X-Api-Key"
-	apiVersionHeader = "Anthropic-Version"
-	defaultVersion   = "2023-06-01"
+	host               = "api.anthropic.com"
+	completionEndpoint = "v1/complete"
+	messagesEndpoint   = "v1/messages"
+	apiKeyHeader       = "X-Api-Key"
+	apiVersionHeader   = "Anthropic-Version"
+	defaultVersion     = "2023-06-01"
 )
 
 // Client is a client for the Anthropic API.
@@ -50,12 +54,56 @@ func (c *Client) NewCompletion(ctx context.Context, req *Request) (*Response, er
 		log.Printf("prompt: %s\n", req.Prompt)
 	}
 
-	var b, err = c.post(ctx, endpoint, req)
+	var b, err = c.post(ctx, completionEndpoint, req)
 	if err != nil {
 		return nil, err
 	}
 
 	var resp = &Response{}
+	if err = json.Unmarshal(b, resp); err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+// NewMessageRequest makes a request to the messages endpoint.
+func (c *Client) NewMessageRequest(ctx context.Context, req *v3.Request[v3.Message]) (*v3.Response, error) {
+	if c.debug {
+		for i, m := range req.Messages {
+			for _, cont := range m.Content {
+				slog.Info("message", "index", i, "role", m.Role, "contentType", cont.Type, "text", cont.Text, "source", cont.Source)
+			}
+		}
+	}
+
+	var b, err = c.post(ctx, messagesEndpoint, req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp = &v3.Response{}
+	if err = json.Unmarshal(b, resp); err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+// NewShortHandMessageRequest makes a request to the messages endpoint.
+func (c *Client) NewShortHandMessageRequest(ctx context.Context, req *v3.Request[v3.ShortHandMessage]) (*v3.Response, error) {
+	if c.debug {
+		for i, m := range req.Messages {
+			slog.Info("message", "index", i, "role", m.Role, "content", m.Content)
+		}
+	}
+
+	var b, err = c.post(ctx, messagesEndpoint, req)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp = &v3.Response{}
 	if err = json.Unmarshal(b, resp); err != nil {
 		return nil, err
 	}
@@ -112,7 +160,7 @@ func (c *Client) NewStreamingCompletion(ctx context.Context, req *Request) (<-ch
 		log.Printf("prompt: %s\n", req.Prompt)
 	}
 
-	var receive, errs, err = c.postStream(ctx, endpoint, &streamingRequest{
+	var receive, errs, err = c.postStream(ctx, completionEndpoint, &streamingRequest{
 		Request: req,
 		Stream:  true,
 	})
