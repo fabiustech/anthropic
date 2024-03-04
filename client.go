@@ -67,6 +67,18 @@ func (c *Client) NewCompletion(ctx context.Context, req *Request) (*Response, er
 	return resp, nil
 }
 
+type streamingMessageRequest[T v3.RequestMessage] struct {
+	*v3.Request[T]
+	Stream bool `json:"stream"`
+}
+
+type v3Event struct {
+	Type         string             `json:"type"`
+	Index        int                `json:"index"`
+	Delta        *v3.MessageContent `json:"delta,omitempty"`
+	ContentBlock *v3.MessageContent `json:"content_block,omitempty"`
+}
+
 // NewMessageRequest makes a request to the messages endpoint.
 func (c *Client) NewMessageRequest(ctx context.Context, req *v3.Request[v3.Message]) (*v3.Response, error) {
 	if c.debug {
@@ -88,6 +100,210 @@ func (c *Client) NewMessageRequest(ctx context.Context, req *v3.Request[v3.Messa
 	}
 
 	return resp, nil
+}
+
+func (c *Client) NewStreamingMessageRequest(ctx context.Context, req *v3.Request[v3.Message]) (*v3.Response, <-chan string, <-chan error, error) {
+	if c.debug {
+		for i, m := range req.Messages {
+			for _, cont := range m.Content {
+				slog.Info("message", "index", i, "role", m.Role, "contentType", cont.Type, "text", cont.Text, "source", cont.Source)
+			}
+		}
+	}
+
+	var receive, errs, err = c.postStream(ctx, messagesEndpoint, &streamingMessageRequest[v3.Message]{
+		Request: req,
+		Stream:  true,
+	})
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	var respCh = make(chan string)
+	var errCh = make(chan error)
+
+	var resp = &v3.Response{}
+
+	go func() {
+		defer close(respCh)
+		defer close(errCh)
+
+		for {
+			select {
+			case b := <-receive:
+				var events []*event
+				events, err = parseEvents(b)
+				if err != nil {
+					errCh <- err
+					return
+				}
+
+				for _, e := range events {
+					switch e.Type {
+					case eventTypeMessageStart:
+						if err = json.Unmarshal(e.Data, resp); err != nil {
+							errCh <- err
+							return
+						}
+					case eventTypeMessageDelta:
+						var delta = &v3.Response{}
+						if err = json.Unmarshal(e.Data, delta); err != nil {
+							errCh <- err
+							return
+						}
+
+						resp.StopReason = delta.StopReason
+						resp.StopSequence = delta.StopSequence
+						resp.Usage = delta.Usage
+					case eventTypeMessageStop:
+						return
+					case eventTypeContentBlockStart:
+						var block = &v3Event{}
+						if err = json.Unmarshal(e.Data, block); err != nil {
+							errCh <- err
+							return
+						}
+
+						resp.Content = append(resp.Content, block.ContentBlock)
+						respCh <- block.ContentBlock.Text
+					case eventTypeContentBlockDelta:
+						var delta = &v3Event{}
+						if err = json.Unmarshal(e.Data, delta); err != nil {
+							errCh <- err
+							return
+						}
+
+						resp.Content[len(resp.Content)-1].Text += delta.Delta.Text
+						respCh <- delta.Delta.Text
+					case eventTypeContentBlockStop:
+						continue
+					case eventTypeError:
+						var errResp = &ResponseError{}
+						if err = json.Unmarshal(e.Data, errResp); err != nil {
+							errCh <- errors.New(string(e.Data))
+							return
+						}
+
+						errCh <- errResp
+						return
+					case eventTypePing:
+						// Do nothing.
+					default:
+						errCh <- ErrBadEvent
+						return
+					}
+				}
+			case err = <-errs:
+				errCh <- err
+				return
+			case <-ctx.Done():
+				errCh <- ctx.Err()
+				return
+			}
+		}
+	}()
+
+	return resp, respCh, errCh, nil
+}
+
+func (c *Client) NewStreamingShortHandMessageRequest(ctx context.Context, req *v3.Request[v3.ShortHandMessage]) (*v3.Response, <-chan string, <-chan error, error) {
+	if c.debug {
+		for i, m := range req.Messages {
+			slog.Info("message", "index", i, "role", m.Role, "content", m.Content)
+		}
+	}
+
+	var receive, errs, err = c.postStream(ctx, messagesEndpoint, &streamingMessageRequest[v3.ShortHandMessage]{
+		Request: req,
+		Stream:  true,
+	})
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	var respCh = make(chan string)
+	var errCh = make(chan error)
+
+	var resp = &v3.Response{}
+
+	go func() {
+		defer close(respCh)
+		defer close(errCh)
+
+		for {
+			select {
+			case b := <-receive:
+				var events []*event
+				events, err = parseEvents(b)
+				if err != nil {
+					errCh <- err
+					return
+				}
+
+				for _, e := range events {
+					switch e.Type {
+					case eventTypeMessageStart:
+						if err = json.Unmarshal(e.Data, resp); err != nil {
+							errCh <- err
+							return
+						}
+					case eventTypeMessageDelta:
+						var delta = &v3.Response{}
+						if err = json.Unmarshal(e.Data, delta); err != nil {
+							errCh <- err
+							return
+						}
+
+						resp.StopReason = delta.StopReason
+						resp.StopSequence = delta.StopSequence
+						resp.Usage = delta.Usage
+					case eventTypeMessageStop:
+						return
+					case eventTypeContentBlockStart:
+						var block = &v3Event{}
+						if err = json.Unmarshal(e.Data, block); err != nil {
+							errCh <- err
+							return
+						}
+
+						resp.Content = append(resp.Content, block.ContentBlock)
+						respCh <- block.ContentBlock.Text
+					case eventTypeContentBlockDelta:
+						var delta = &v3Event{}
+						if err = json.Unmarshal(e.Data, delta); err != nil {
+							errCh <- err
+							return
+						}
+
+						resp.Content[len(resp.Content)-1].Text += delta.Delta.Text
+						respCh <- delta.Delta.Text
+					case eventTypeContentBlockStop:
+						continue
+					case eventTypeError:
+						var errResp = &ResponseError{}
+						if err = json.Unmarshal(e.Data, errResp); err != nil {
+							errCh <- errors.New(string(e.Data))
+							return
+						}
+
+						errCh <- errResp
+						return
+					case eventTypePing:
+						// Do nothing.
+					default:
+						errCh <- ErrBadEvent
+						return
+					}
+				}
+			case err = <-errs:
+				errCh <- err
+				return
+			case <-ctx.Done():
+				errCh <- ctx.Err()
+				return
+			}
+		}
+	}()
+
+	return resp, respCh, errCh, nil
 }
 
 // NewShortHandMessageRequest makes a request to the messages endpoint.
@@ -234,9 +450,20 @@ var re = regexp.MustCompile("event: (.*?)\ndata: (.*?)\n")
 type eventType string
 
 const (
+	// Completion event types.
 	eventTypeCompletion eventType = "completion"
-	eventTypeError      eventType = "error"
-	eventTypePing       eventType = "ping"
+
+	// Message event types.
+	eventTypeMessageStart      eventType = "message_start"
+	eventTypeMessageDelta      eventType = "message_delta"
+	eventTypeMessageStop       eventType = "message_stop"
+	eventTypeContentBlockStart eventType = "content_block_start"
+	eventTypeContentBlockDelta eventType = "content_block_delta"
+	eventTypeContentBlockStop  eventType = "content_block_stop"
+
+	// Event types for all streaming requests.
+	eventTypeError eventType = "error"
+	eventTypePing  eventType = "ping"
 )
 
 // ErrBadEvent is returned when an event is received that cannot be parsed.
