@@ -14,6 +14,10 @@ const (
 	// Claude3Sonnet20240229 is Anthropic's most balanced model between intelligence and speed, a great choice for
 	// enterprise workloads and scaled AI deployments.
 	Claude3Sonnet20240229
+
+	// Claude3Haiku20240307 is Anthropic's fastest and most compact model, designed for near-instant responsiveness and
+	// seamless AI experiences that mimic human interactions.
+	Claude3Haiku20240307
 )
 
 // String implements the fmt.Stringer interface.
@@ -42,9 +46,11 @@ func (c *Model) UnmarshalText(b []byte) error {
 var completionToString = map[Model]string{
 	Claude3Opus20240229:   "claude-3-opus-20240229",
 	Claude3Sonnet20240229: "claude-3-sonnet-20240229",
+	Claude3Haiku20240307:  "claude-3-haiku-20240307",
 }
 
 var stringToCompletion = map[string]Model{
 	"claude-3-opus-20240229":   Claude3Opus20240229,
 	"claude-3-sonnet-20240229": Claude3Sonnet20240229,
+	"claude-3-haiku-20240307":  Claude3Haiku20240307,
 }
