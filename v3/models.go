@@ -18,6 +18,9 @@ const (
 	// Claude3Haiku20240307 is Anthropic's fastest and most compact model, designed for near-instant responsiveness and
 	// seamless AI experiences that mimic human interactions.
 	Claude3Haiku20240307
+
+	// Claude3Sonnet20240620 is Anthropic's 3.5 model that is supposed to be better than Opus while being the same speed and price as Sonnet.
+	Claude3Dot5Sonnet20240620
 )
 
 // String implements the fmt.Stringer interface.
@@ -44,13 +47,15 @@ func (c *Model) UnmarshalText(b []byte) error {
 }
 
 var completionToString = map[Model]string{
-	Claude3Opus20240229:   "claude-3-opus-20240229",
-	Claude3Sonnet20240229: "claude-3-sonnet-20240229",
-	Claude3Haiku20240307:  "claude-3-haiku-20240307",
+	Claude3Opus20240229:       "claude-3-opus-20240229",
+	Claude3Sonnet20240229:     "claude-3-sonnet-20240229",
+	Claude3Haiku20240307:      "claude-3-haiku-20240307",
+	Claude3Dot5Sonnet20240620: "claude-3-5-sonnet-20240620",
 }
 
 var stringToCompletion = map[string]Model{
-	"claude-3-opus-20240229":   Claude3Opus20240229,
-	"claude-3-sonnet-20240229": Claude3Sonnet20240229,
-	"claude-3-haiku-20240307":  Claude3Haiku20240307,
+	"claude-3-opus-20240229":     Claude3Opus20240229,
+	"claude-3-sonnet-20240229":   Claude3Sonnet20240229,
+	"claude-3-haiku-20240307":    Claude3Haiku20240307,
+	"claude-3-5-sonnet-20240620": Claude3Dot5Sonnet20240620,
 }
