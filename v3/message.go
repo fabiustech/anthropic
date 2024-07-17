@@ -1,5 +1,7 @@
 package v3
 
+import "encoding/json"
+
 // Message represents a message sent to the API.
 type Message struct {
 	// Role is the role of the message sender.
@@ -27,8 +29,8 @@ type MessageContent struct {
 	Source *MediaSource `json:"source,omitempty"`
 	// Name is the name of the tool used (if any) .
 	Name string `json:"name,omitempty"`
-	// Input is the input of for a specificied tool (if any).
-	Input string `json:"input,omitempty"`
+	// Input is the input of for a specified tool (if any).
+	Input json.RawMessage `json:"input,omitempty"`
 	// Content is the result of a calling specified tool (if any).
 	Content string `json:"content,omitempty"`
 }
