@@ -12,6 +12,8 @@ type Schema struct {
 	Type        SchemaType         `json:"type"`
 	Properties  map[string]*Schema `json:"properties,omitempty"`
 	Title       string             `json:"title,omitempty"`
+	Items       *Schema            `json:"items,omitempty"`
+	Enum        []interface{}      `json:"enum,omitempty"`
 	Description string             `json:"description,omitempty"`
 	Required    []string           `json:"required,omitempty"`
 }
