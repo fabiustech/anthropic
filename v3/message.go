@@ -21,7 +21,8 @@ type ShortHandMessage struct {
 
 // MessageContent represents the content of a message.
 type MessageContent struct {
-	// Type is the type of the content. It can be either "text", "image", or "tool_use".
+	// Type is the type of the content. It can be either "text", "image", or "tool_use", or "tool_result"
+	// ("tool_result" is only used when there's an error with the tool usage by the model and the model is being instructed to fix it in a subsequent call).
 	Type string `json:"type"`
 	// Text is the text content of the message. Leave this empty if passing an image.
 	Text string `json:"text,omitempty"`
@@ -33,6 +34,10 @@ type MessageContent struct {
 	Input json.RawMessage `json:"input,omitempty"`
 	// Content is the result of a calling specified tool (if any).
 	Content string `json:"content,omitempty"`
+	// IsError is true only when there is an error with the first tool usage and the model is being instructed to try again.
+	IsError bool `json:"is_error,omitempty"`
+	// ToolUseID is the ID of the tool usage, only used when the model is instructed to try again.
+	ToolUseID string `json:"tool_use_id,omitempty"`
 }
 
 // MediaSource represents the media source of a message.
