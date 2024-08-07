@@ -24,23 +24,52 @@ const (
 	apiKeyHeader       = "X-Api-Key"
 	apiVersionHeader   = "Anthropic-Version"
 	defaultVersion     = "2023-06-01"
+
+	betaHeaderName  = "anthropic-beta"
+	betaHeaderValue = "max-tokens-3-5-sonnet-2024-07-15"
 )
 
 // Client is a client for the Anthropic API.
 type Client struct {
-	key, version string
-	debug        bool
+	key   string
+	debug bool
+	// requestHeaders is a map of custom headers to be sent with each request.
+	requestHeaders http.Header
 }
 
 // NewClient returns a client with the given API key.
 func NewClient(key string) *Client {
-	return &Client{key: key, version: defaultVersion}
+	return &Client{key: key, requestHeaders: http.Header{apiVersionHeader: {defaultVersion}}}
 }
 
 // SetVersion set's the value passed in the |Anthropic-Version| header for requests.
 // The default value is "2023-06-01".
 func (c *Client) SetVersion(version string) {
-	c.version = version
+	if c.requestHeaders == nil {
+		c.requestHeaders = make(http.Header)
+	}
+
+	c.requestHeaders.Set(apiVersionHeader, version)
+}
+
+// AddRequestHeaders adds the custom headers to be sent with each request.
+func (c *Client) AddRequestHeaders(headers http.Header) {
+	if c.requestHeaders == nil {
+		return
+	}
+
+	for k, v := range headers {
+		c.requestHeaders[k] = v
+	}
+}
+
+// SetBetaMaxOutputTokenHeader sets the |anthropic-beta| header to "max-tokens-3-5-sonnet-2024-07-15".
+func (c *Client) SetBetaMaxOutputTokenHeader() {
+	if c.requestHeaders == nil {
+		c.requestHeaders = make(http.Header)
+	}
+
+	c.requestHeaders.Set(betaHeaderName, betaHeaderValue)
 }
 
 // Debug enables debug logging. When enabled, the client will log the request's prompt.
@@ -598,8 +627,13 @@ func (c *Client) newRequest(ctx context.Context, method string, url string, body
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set(apiVersionHeader, c.version)
 	req.Header.Set(apiKeyHeader, c.key)
+
+	if c.requestHeaders != nil {
+		for k, v := range c.requestHeaders {
+			req.Header[k] = v
+		}
+	}
 
 	return req, nil
 }
