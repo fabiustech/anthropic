@@ -25,6 +25,8 @@ const (
 	apiVersionHeader   = "Anthropic-Version"
 	defaultVersion     = "2023-06-01"
 
+	// Header and value to enable using the beta version of the API which allows for a max output tokens of 8192.
+	// https://docs.anthropic.com/en/release-notes/api#july-15th-2024
 	betaHeaderName  = "anthropic-beta"
 	betaHeaderValue = "max-tokens-3-5-sonnet-2024-07-15"
 )
