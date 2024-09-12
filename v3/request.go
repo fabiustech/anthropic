@@ -5,8 +5,13 @@ type RequestMessage interface {
 	Message | ShortHandMessage
 }
 
+// SystemPrompt represents a system prompt.
+type SystemPrompt interface {
+	*string | []*SystemMessage
+}
+
 // Request represents the request to the API.
-type Request[T RequestMessage] struct {
+type Request[T RequestMessage, S SystemPrompt] struct {
 	// Model controls which version of Claude answers your request. For more on the models, see the documentation in
 	// models.go or visit https://console.anthropic.com/docs/api/reference. Required.
 	// When making a request via AWS Bedrock, this will be zeroed out (and instead used as the model ID the request),
@@ -18,7 +23,7 @@ type Request[T RequestMessage] struct {
 	// specifying a particular goal or role.
 	// https://docs.anthropic.com/claude/docs/system-prompts
 	// Optional.
-	System *string `json:"system,omitempty"`
+	System S `json:"system,omitempty"`
 	// MaxTokens is The maximum number of tokens to generate before stopping. Note that our models may stop before
 	// reaching this maximum. This parameter only specifies the absolute maximum number of tokens to generate.
 	//

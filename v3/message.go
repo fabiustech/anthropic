@@ -49,3 +49,20 @@ type MediaSource struct {
 	// Data is the data of the media source.
 	Data string `json:"data"`
 }
+
+// CacheControl represents the cache control of a system message.
+type CacheControl struct {
+	// Type is the type of the cache control. Currently only "ephemeral" is supported.
+	Type string `json:"type"`
+}
+
+// SystemMessage represents a system message.
+type SystemMessage struct {
+	// Type is the type of the system message. Currently only "text" is supported.
+	Type string `json:"type"`
+	// Text is the text content of the system message.
+	Text string `json:"text"`
+	// CacheControl is the cache control of the system message. If set, the system message will not be cached (assuming
+	// the prompt caching beta header is included in the request.
+	CacheControl *CacheControl `json:"cache_control,omitempty"`
+}
