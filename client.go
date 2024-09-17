@@ -27,8 +27,9 @@ const (
 
 	// Header and value to enable using the beta version of the API which allows for a max output tokens of 8192.
 	// https://docs.anthropic.com/en/release-notes/api#july-15th-2024
-	betaHeaderName  = "anthropic-beta"
-	betaHeaderValue = "max-tokens-3-5-sonnet-2024-07-15"
+	betaHeaderName             = "anthropic-beta"
+	betaOutputTokenHeaderValue = "max-tokens-3-5-sonnet-2024-07-15"
+	betaPromptCacheHeaderValue = "prompt-caching-2024-07-31"
 )
 
 // Client is a client for the Anthropic API.
@@ -71,7 +72,16 @@ func (c *Client) SetBetaMaxOutputTokenHeader() {
 		c.requestHeaders = make(http.Header)
 	}
 
-	c.requestHeaders.Set(betaHeaderName, betaHeaderValue)
+	c.requestHeaders.Add(betaHeaderName, betaOutputTokenHeaderValue)
+}
+
+// SetBetaPromptCacheHeader sets the |anthropic-beta| header to "prompt-caching-2024-07-31".
+func (c *Client) SetBetaPromptCacheHeader() {
+	if c.requestHeaders == nil {
+		c.requestHeaders = make(http.Header)
+	}
+
+	c.requestHeaders.Add(betaHeaderName, betaPromptCacheHeaderValue)
 }
 
 // Debug enables debug logging. When enabled, the client will log the request's prompt.

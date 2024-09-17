@@ -1,5 +1,10 @@
 package v3
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 // RequestMessage represents a message sent to the API.
 type RequestMessage interface {
 	Message | ShortHandMessage
@@ -15,10 +20,14 @@ type Request[T RequestMessage] struct {
 	// Messages is a list of messages to send to the API. Required.
 	Messages []*T `json:"messages"`
 	// System is the system prompt. A system prompt is a way of providing context and instructions to Claude, such as
-	// specifying a particular goal or role.
+	// specifying a particular goal or role. At most one of System or SystemMessages should be provided.
 	// https://docs.anthropic.com/claude/docs/system-prompts
 	// Optional.
-	System *string `json:"system,omitempty"`
+	System *string `json:"-"`
+	// SystemMessages is a list of system messages to send to the API. At most one of System or SystemMessages
+	// should be provided.
+	// Optional.
+	SystemMessages []*SystemMessage `json:"-"`
 	// MaxTokens is The maximum number of tokens to generate before stopping. Note that our models may stop before
 	// reaching this maximum. This parameter only specifies the absolute maximum number of tokens to generate.
 	//
@@ -55,6 +64,37 @@ type Request[T RequestMessage] struct {
 	TopP *int `json:"topP,omitempty"`
 	// Metadata is an object describing metadata about the request. Optional.
 	Metadata *Metadata `json:"metadata,omitempty"`
+}
+
+// marshalRequest is a type alias for Request to allow custom JSON marshaling.
+type marshalRequest[T RequestMessage] Request[T]
+
+// MarshalJSON implements a custom JSON marshaling for the Request type.
+// TODO: This is very hacky and a better solution should be found.
+func (r Request[T]) MarshalJSON() ([]byte, error) {
+	var aux = &struct {
+		*marshalRequest[T]
+		SystemField json.RawMessage `json:"system,omitempty"`
+	}{
+		marshalRequest: (*marshalRequest[T])(&r),
+	}
+
+	if r.System != nil && len(r.SystemMessages) > 0 {
+		return nil, fmt.Errorf("only one of System or SystemMessages should be provided")
+	}
+
+	var err error
+	if r.System != nil {
+		aux.SystemField, err = json.Marshal(r.System)
+	} else if len(r.SystemMessages) > 0 {
+		aux.SystemField, err = json.Marshal(r.SystemMessages)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return json.Marshal(aux)
 }
 
 // Optional returns a pointer to |v|. Used to easily assign literals to optional parameters.
