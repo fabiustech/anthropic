@@ -21,6 +21,9 @@ const (
 
 	// Claude3Sonnet20240620 is Anthropic's 3.5 model that is supposed to be better than Opus while being the same speed and price as Sonnet.
 	Claude3Dot5Sonnet20240620
+
+	// Claude3Dot5Sonnet20241022 This version shows significant improvements in coding capabilities, improving performance on SWE-bench Verified from 33.4% to 49.0%, scoring higher than all publicly available models 2. The upgraded Claude 3.5 Sonnet delivers these improvements while maintaining the same price and speed as its predecessor .
+	Claude3Dot5Sonnet20241022
 )
 
 // String implements the fmt.Stringer interface.
@@ -51,6 +54,7 @@ var completionToString = map[Model]string{
 	Claude3Sonnet20240229:     "claude-3-sonnet-20240229",
 	Claude3Haiku20240307:      "claude-3-haiku-20240307",
 	Claude3Dot5Sonnet20240620: "claude-3-5-sonnet-20240620",
+	Claude3Dot5Sonnet20241022: "claude-3-5-sonnet-20241022",
 }
 
 var stringToCompletion = map[string]Model{
@@ -58,4 +62,5 @@ var stringToCompletion = map[string]Model{
 	"claude-3-sonnet-20240229":   Claude3Sonnet20240229,
 	"claude-3-haiku-20240307":    Claude3Haiku20240307,
 	"claude-3-5-sonnet-20240620": Claude3Dot5Sonnet20240620,
+	"claude-3-5-sonnet-20241022": Claude3Dot5Sonnet20241022,
 }
