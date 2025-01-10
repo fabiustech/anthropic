@@ -3,10 +3,12 @@ package v3
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 )
 
 // RequestMessage represents a message sent to the API.
 type RequestMessage interface {
+	debugger
 	Message | ShortHandMessage
 }
 
@@ -64,6 +66,22 @@ type Request[T RequestMessage] struct {
 	TopP *int `json:"topP,omitempty"`
 	// Metadata is an object describing metadata about the request. Optional.
 	Metadata *Metadata `json:"metadata,omitempty"`
+}
+
+type debugger interface {
+	debug()
+}
+
+func (r *Request[T]) Debug() {
+	if r.System != nil {
+		slog.Info("system message", "message", *r.System)
+	}
+	for i, m := range r.SystemMessages {
+		slog.Info("system message", "index", i, "message", m)
+	}
+	for _, m := range r.Messages {
+		(*m).debug()
+	}
 }
 
 // marshalRequest is a type alias for Request to allow custom JSON marshaling.

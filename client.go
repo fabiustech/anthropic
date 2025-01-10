@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -92,7 +91,7 @@ func (c *Client) Debug() {
 // NewCompletion returns a completion response from the API.
 func (c *Client) NewCompletion(ctx context.Context, req *Request) (*Response, error) {
 	if c.debug {
-		log.Printf("prompt: %s\n", req.Prompt)
+		slog.Info("completion request", "prompt", req.Prompt)
 	}
 
 	var b, err = c.post(ctx, completionEndpoint, req)
@@ -123,11 +122,7 @@ type v3Event struct {
 // NewMessageRequest makes a request to the messages endpoint.
 func (c *Client) NewMessageRequest(ctx context.Context, req *v3.Request[v3.Message]) (*v3.Response, error) {
 	if c.debug {
-		for i, m := range req.Messages {
-			for _, cont := range m.Content {
-				slog.Info("message", "index", i, "role", m.Role, "contentType", cont.Type, "text", cont.Text, "source", cont.Source)
-			}
-		}
+		req.Debug()
 	}
 
 	var b, err = c.post(ctx, messagesEndpoint, req)
@@ -145,11 +140,7 @@ func (c *Client) NewMessageRequest(ctx context.Context, req *v3.Request[v3.Messa
 
 func (c *Client) NewStreamingMessageRequest(ctx context.Context, req *v3.Request[v3.Message]) (*v3.Response, <-chan string, <-chan error, error) {
 	if c.debug {
-		for i, m := range req.Messages {
-			for _, cont := range m.Content {
-				slog.Info("message", "index", i, "role", m.Role, "contentType", cont.Type, "text", cont.Text, "source", cont.Source)
-			}
-		}
+		req.Debug()
 	}
 
 	var receive, errs, err = c.postStream(ctx, messagesEndpoint, &streamingMessageRequest[v3.Message]{
@@ -248,9 +239,7 @@ func (c *Client) NewStreamingMessageRequest(ctx context.Context, req *v3.Request
 
 func (c *Client) NewStreamingShortHandMessageRequest(ctx context.Context, req *v3.Request[v3.ShortHandMessage]) (*v3.Response, <-chan string, <-chan error, error) {
 	if c.debug {
-		for i, m := range req.Messages {
-			slog.Info("message", "index", i, "role", m.Role, "content", m.Content)
-		}
+		req.Debug()
 	}
 
 	var receive, errs, err = c.postStream(ctx, messagesEndpoint, &streamingMessageRequest[v3.ShortHandMessage]{
@@ -350,9 +339,7 @@ func (c *Client) NewStreamingShortHandMessageRequest(ctx context.Context, req *v
 // NewShortHandMessageRequest makes a request to the messages endpoint.
 func (c *Client) NewShortHandMessageRequest(ctx context.Context, req *v3.Request[v3.ShortHandMessage]) (*v3.Response, error) {
 	if c.debug {
-		for i, m := range req.Messages {
-			slog.Info("message", "index", i, "role", m.Role, "content", m.Content)
-		}
+		req.Debug()
 	}
 
 	var b, err = c.post(ctx, messagesEndpoint, req)
@@ -414,7 +401,7 @@ type streamingRequest struct {
 // the API and the second is sent any error(s) encountered while receiving / parsing responses.
 func (c *Client) NewStreamingCompletion(ctx context.Context, req *Request) (<-chan *Response, <-chan error, error) {
 	if c.debug {
-		log.Printf("prompt: %s\n", req.Prompt)
+		slog.Info("completion request", "prompt", req.Prompt)
 	}
 
 	var receive, errs, err = c.postStream(ctx, completionEndpoint, &streamingRequest{
