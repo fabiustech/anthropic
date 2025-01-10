@@ -1,6 +1,9 @@
 package v3
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"log/slog"
+)
 
 // Message represents a message sent to the API.
 type Message struct {
@@ -10,6 +13,18 @@ type Message struct {
 	Content []*MessageContent `json:"content"`
 }
 
+func (m Message) debug() {
+	for i, cont := range m.Content {
+		slog.Info("message",
+			"index", i,
+			"role", m.Role,
+			"contentType", cont.Type,
+			"text", cont.Text,
+			"source", cont.Source,
+		)
+	}
+}
+
 // ShortHandMessage represents a message sent to the API in a shorthand format.
 // It only supports text.
 type ShortHandMessage struct {
@@ -17,6 +32,10 @@ type ShortHandMessage struct {
 	Role Role `json:"role"`
 	// Content is the content of the message.
 	Content string `json:"content"`
+}
+
+func (m ShortHandMessage) debug() {
+	slog.Info("message", "role", m.Role, "content", m.Content)
 }
 
 // MessageContent represents the content of a message.
