@@ -27,6 +27,18 @@ const (
 
 	// Claude3Dot7Sonnet20250219 is Anthropics most intelligent model, which allows for extended thinking.
 	Claude3Dot7Sonnet20250219
+
+	// Claude3Dot5Sonnet is the latest version of the Claude 3.5 Sonnet model.
+	Claude3Dot5Sonnet
+
+	// Claude3Dot5Opus is the latest version of the Claude 3.5 Opus model.
+	Claude3Dot5Opus
+
+	// Claude3Dot5Haiku is the latest version of the Claude 3.5 Haiku model.
+	Claude3Dot5Haiku
+
+	// Claude3Dot7Sonnet is the latest version of the Claude 3.7 Sonnet model.
+	Claude3Dot7Sonnet
 )
 
 // String implements the fmt.Stringer interface.
@@ -58,6 +70,11 @@ var completionToString = map[Model]string{
 	Claude3Haiku20240307:      "claude-3-haiku-20240307",
 	Claude3Dot5Sonnet20240620: "claude-3-5-sonnet-20240620",
 	Claude3Dot5Sonnet20241022: "claude-3-5-sonnet-20241022",
+	Claude3Dot7Sonnet20250219: "claude-3-7-sonnet-20250219",
+	Claude3Dot5Sonnet:         "claude-3-5-sonnet-latest",
+	Claude3Dot5Opus:           "claude-3-5-opus-latest",
+	Claude3Dot5Haiku:          "claude-3-5-haiku-latest",
+	Claude3Dot7Sonnet:         "claude-3-7-sonnet-latest",
 }
 
 var stringToCompletion = map[string]Model{
@@ -66,4 +83,9 @@ var stringToCompletion = map[string]Model{
 	"claude-3-haiku-20240307":    Claude3Haiku20240307,
 	"claude-3-5-sonnet-20240620": Claude3Dot5Sonnet20240620,
 	"claude-3-5-sonnet-20241022": Claude3Dot5Sonnet20241022,
+	"claude-3-7-sonnet-20250219": Claude3Dot7Sonnet20250219,
+	"claude-3-5-sonnet-latest":   Claude3Dot5Sonnet,
+	"claude-3-5-opus-latest":     Claude3Dot5Opus,
+	"claude-3-5-haiku-latest":    Claude3Dot5Haiku,
+	"claude-3-7-sonnet-latest":   Claude3Dot7Sonnet,
 }
