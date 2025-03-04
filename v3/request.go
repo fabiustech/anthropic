@@ -37,6 +37,10 @@ type Request[T RequestMessage] struct {
 	// https://docs.anthropic.com/claude/docs/models-overview
 	// Required.
 	MaxTokens int `json:"max_tokens"`
+	// Thinking is a Configuration for enabling Claude's extended thinking. When enabled, responses include thinking
+	// content blocks showing Claude's thinking process before the final answer. Requires a minimum budget of
+	// 1,024 tokens and counts towards your max_tokens limit.
+	Thinking *Thinking `json:"thinking,omitempty"`
 	// StopSequences specifies a list of sequences to stop sampling at. Anthropic's models stop on "\n\nHuman:", and
 	// may include additional built-in stop sequences in the future. By providing the stop_sequences parameter, you may
 	// include additional strings that will cause the model to stop generating.
@@ -66,6 +70,13 @@ type Request[T RequestMessage] struct {
 	TopP *int `json:"topP,omitempty"`
 	// Metadata is an object describing metadata about the request. Optional.
 	Metadata *Metadata `json:"metadata,omitempty"`
+}
+
+type Thinking struct {
+	// Type can either be "enabled" or "disabled".
+	Type string `json:"type"`
+	// BudgetTokens is the maximum amount of tokens to spend on thinking. It must be >= 1024 and less than MaxTokens.
+	BudgetTokens int `json:"budget_tokens"`
 }
 
 type debugger interface {

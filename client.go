@@ -27,7 +27,7 @@ const (
 	// Header and value to enable using the beta version of the API which allows for a max output tokens of 8192.
 	// https://docs.anthropic.com/en/release-notes/api#july-15th-2024
 	betaHeaderName             = "anthropic-beta"
-	betaOutputTokenHeaderValue = "max-tokens-3-5-sonnet-2024-07-15"
+	betaOutputTokenHeaderValue = "output-128k-2025-02-19"
 	betaPromptCacheHeaderValue = "prompt-caching-2024-07-31"
 )
 

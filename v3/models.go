@@ -19,11 +19,14 @@ const (
 	// seamless AI experiences that mimic human interactions.
 	Claude3Haiku20240307
 
-	// Claude3Sonnet20240620 is Anthropic's 3.5 model that is supposed to be better than Opus while being the same speed and price as Sonnet.
+	// Claude3Dot5Sonnet20240620 is Anthropic's 3.5 model that is supposed to be better than Opus while being the same speed and price as Sonnet.
 	Claude3Dot5Sonnet20240620
 
 	// Claude3Dot5Sonnet20241022 This version shows significant improvements in coding capabilities, improving performance on SWE-bench Verified from 33.4% to 49.0%, scoring higher than all publicly available models 2. The upgraded Claude 3.5 Sonnet delivers these improvements while maintaining the same price and speed as its predecessor .
 	Claude3Dot5Sonnet20241022
+
+	// Claude3Dot7Sonnet20250219 is Anthropics most intelligent model, which allows for extended thinking.
+	Claude3Dot7Sonnet20250219
 )
 
 // String implements the fmt.Stringer interface.
