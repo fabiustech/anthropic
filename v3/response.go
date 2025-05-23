@@ -16,6 +16,7 @@ type Response struct {
 	// "end_turn": the model reached a natural stopping point.
 	// "max_tokens": we exceeded the requested max_tokens or the model's maximum.
 	// "stop_sequence": one of your provided custom stop_sequences was generated.
+	// "refusal": for content that the model declines to generate for safety reasons.
 	StopReason string `json:"stop_reason"`
 	// StopSequence represents which custom stop sequence was generated, if any.
 	// This value will be a non-null string if one of your custom stop sequences was generated.
