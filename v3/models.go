@@ -47,8 +47,8 @@ const (
 	// complex reasoning and advanced coding.
 	Claude4Opus20250514
 
-	// Claude45Sonnet20250929 is Anthropic's latest high-performance model with exceptional reasoning and efficiency.
-	Claude45Sonnet20250929
+	// Claude4Dot5Sonnet20250929 is Anthropic's latest high-performance model with exceptional reasoning and efficiency.
+	Claude4Dot5Sonnet20250929
 )
 
 // String implements the fmt.Stringer interface.
@@ -87,7 +87,7 @@ var completionToString = map[Model]string{
 	Claude3Dot7Sonnet:         "claude-3-7-sonnet-latest",
 	Claude4Sonnet20250514:     "claude-sonnet-4-20250514",
 	Claude4Opus20250514:       "claude-opus-4-20250514",
-	Claude45Sonnet20250929:    "claude-sonnet-4-5-20250929",
+	Claude4Dot5Sonnet20250929: "claude-sonnet-4-5-20250929",
 }
 
 var stringToCompletion = map[string]Model{
@@ -103,5 +103,5 @@ var stringToCompletion = map[string]Model{
 	"claude-3-7-sonnet-latest":   Claude3Dot7Sonnet,
 	"claude-sonnet-4-20250514":   Claude4Sonnet20250514,
 	"claude-opus-4-20250514":     Claude4Opus20250514,
-	"claude-sonnet-4-5-20250929": Claude45Sonnet20250929,
+	"claude-sonnet-4-5-20250929": Claude4Dot5Sonnet20250929,
 }
