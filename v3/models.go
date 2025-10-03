@@ -40,7 +40,7 @@ const (
 	// Claude3Dot7Sonnet is the latest version of the Claude 3.7 Sonnet model.
 	Claude3Dot7Sonnet
 
-	// Claude4Sonnet20250514 is Anthropic's latest high-performance model with exceptional reasoning and efficiency.
+	// Claude4Sonnet20250514 is Anthropic's older high-performance model with exceptional reasoning and efficiency.
 	Claude4Sonnet20250514
 
 	// Claude4Opus20250514 is Anthropic's most capable and intelligent model yet. Claude Opus 4 sets new standards in
