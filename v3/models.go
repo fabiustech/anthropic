@@ -40,12 +40,15 @@ const (
 	// Claude3Dot7Sonnet is the latest version of the Claude 3.7 Sonnet model.
 	Claude3Dot7Sonnet
 
-	// Claude4Sonnet20250514 is Anthropic's latest high-performance model with exceptional reasoning and efficiency.
+	// Claude4Sonnet20250514 is Anthropic's older high-performance model with exceptional reasoning and efficiency.
 	Claude4Sonnet20250514
 
 	// Claude4Opus20250514 is Anthropic's most capable and intelligent model yet. Claude Opus 4 sets new standards in
 	// complex reasoning and advanced coding.
 	Claude4Opus20250514
+
+	// Claude4Dot5Sonnet20250929 is Anthropic's latest high-performance model with exceptional reasoning and efficiency.
+	Claude4Dot5Sonnet20250929
 
 	// ClaudeSonnet4Dot5 is Anthropic's smartest model for complex agents and coding.
 	ClaudeSonnet4Dot5
@@ -93,6 +96,7 @@ var completionToString = map[Model]string{
 	Claude3Dot7Sonnet:         "claude-3-7-sonnet-latest",
 	Claude4Sonnet20250514:     "claude-sonnet-4-20250514",
 	Claude4Opus20250514:       "claude-opus-4-20250514",
+	Claude4Dot5Sonnet20250929: "claude-sonnet-4-5-20250929",
 	ClaudeSonnet4Dot5:         "claude-sonnet-4-5",
 	ClaudeHaiku4Dot5:          "claude-haiku-4-5",
 	ClaudeOpus4Dot1:           "claude-opus-4-1",
@@ -111,6 +115,7 @@ var stringToCompletion = map[string]Model{
 	"claude-3-7-sonnet-latest":   Claude3Dot7Sonnet,
 	"claude-sonnet-4-20250514":   Claude4Sonnet20250514,
 	"claude-opus-4-20250514":     Claude4Opus20250514,
+	"claude-sonnet-4-5-20250929": Claude4Dot5Sonnet20250929,
 	"claude-sonnet-4-5":          ClaudeSonnet4Dot5,
 	"claude-haiku-4-5":           ClaudeHaiku4Dot5,
 	"claude-opus-4-1":            ClaudeOpus4Dot1,
